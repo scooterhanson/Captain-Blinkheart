@@ -24,7 +24,16 @@ Captain Blinkheart turns presses on a six-button MIDI Captain MINI6 pedal into
 lighting cues. Each button picks an action (Reset, Intro, Low, Medium, High or
 Frenzy), and each action picks a random scene from its own list of MIDI notes,
 so the lights keep changing without repeating the same look. Cues go to
-Show Buddy Active running right inside the app, or to any CoreMIDI port.
+[Show Buddy Active](https://www.dmxis.com/show-buddy-active/) by DB Audioware running right inside the app, or
+to any CoreMIDI port.
+
+> [!IMPORTANT]
+> **Show Buddy Active is not part of this project.** It is owned and developed by
+> [DB Audioware](https://www.dmxis.com/show-buddy-active/), and all rights to it belong to them. Josh Hanson and
+> this project own none of the rights to Show Buddy Active, and Captain
+> Blinkheart neither includes nor redistributes it. Captain Blinkheart is meant
+> to be used by **licensed Show Buddy Active users**, who host their own
+> licensed copy of the plugin inside the app.
 
 ## Features
 
@@ -53,8 +62,10 @@ Download **Captain-Blinkheart-1.0.pkg** from the
 [latest release](../../releases/latest) and open it. The installer is signed
 and notarized by Apple and puts **Captain Blinkheart** in `/Applications`. It
 runs on macOS 12 or later, on Apple silicon and Intel Macs. To build it
-yourself instead, see [Run and build](#run-and-build). Show Buddy Active is sold separately and
-must be installed to host it in the app.
+yourself instead, see [Run and build](#run-and-build).
+
+To host Show Buddy Active in the app, you need your own licensed copy,
+purchased separately from [DB Audioware](https://www.dmxis.com/show-buddy-active/) and installed as an Audio Unit.
 
 ## Included MIDI Captain profile
 
@@ -136,7 +147,10 @@ build `AppIcon.icns`. The crop is measured from this artwork, so update
 ### Option A: host the plugin inside Captain Blinkheart
 
 Show Buddy Active's Audio Unit (`aumf DmpP dBau`) can run inside the app, so no
-IAC bus or DAW is needed.
+IAC bus or DAW is needed. This is the recommended setup, and it requires an
+installed, licensed copy of [Show Buddy Active](https://www.dmxis.com/show-buddy-active/) from DB Audioware.
+Captain Blinkheart loads the plugin you have installed; it doesn't include,
+unlock or modify it.
 
 1. Select the MIDI Captain as **Pedal input**.
 2. Set **Send to** to **Hosted Plugin**. The app loads Show Buddy Active
@@ -208,5 +222,16 @@ published by the Free Software Foundation, either version 3 of the License, or
 be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-Show Buddy Active and MIDI Captain are trademarks of their respective owners.
-This project is independent and is not affiliated with or endorsed by them.
+### Third-party software and trademarks
+
+[Show Buddy Active](https://www.dmxis.com/show-buddy-active/) is software owned by DB Audioware. All rights to
+it, including its name, code and user interface, belong to DB Audioware. Josh
+Hanson owns none of the rights to Show Buddy Active, and the AGPL license above
+covers only Captain Blinkheart's own code. Captain Blinkheart doesn't include
+or redistribute Show Buddy Active. The intended use is by licensed Show Buddy
+Active users, hosting their own licensed copy of the plugin in Captain
+Blinkheart under DB Audioware's license terms.
+
+MIDI Captain is a trademark of its owner, Paint Audio. Captain Blinkheart is an
+independent project and is not affiliated with or endorsed by DB Audioware or
+Paint Audio.
