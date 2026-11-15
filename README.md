@@ -41,6 +41,12 @@ Show Buddy Active running right inside the app, or to any CoreMIDI port.
 - **Native and lightweight.** SwiftUI, CoreMIDI and AVFoundation, with no third-party
   dependencies. Universal binary for Apple silicon and Intel.
 
+## Screenshots
+
+| MIDI Captain: pedal button rules | MIDI Out: scene notes per action |
+|---|---|
+| <img src="docs/images/midi-captain.png" alt="MIDI Captain tab showing each pedal key's MIDI messages and assigned action"> | <img src="docs/images/midi-out.png" alt="MIDI Out tab showing the note lists for Reset, Intro and Low"> |
+
 ## Install
 
 Installers are published under [Releases](../../releases) as they become
