@@ -1,0 +1,94 @@
+[globalsetup]
+# 0-100
+ledbright = [30]
+
+# 0-100
+screenbright = [80]
+
+# on / off
+midithrough = [off]
+
+# on / off
+# Selecting black or white fonts according to the wallpaper background
+dark_fonts = [off]
+
+# 123 / abc3 / abc4 / abc5 / abc8
+# Setting 123 is to display the PC as a numerical value
+# abc3 means PC display as 1A,1B,1C,2A... abc5 means 1A,1B,1C,1D,1E,2A...
+display_number_ABC = [abc3]
+
+# 0 / 1
+# set to 1 so that the displayed PC number starting from 1 (PC value +1)
+# set to 0 so that the displayed PC number starting from 0 (actual PC value)
+display_pc_offset = [1]
+
+# 0 / 1
+# set to 0 so that when abcX display selected above, start from 0A,0B,0C...
+# set to 1 so that when abcX display selected above, start from 1A,1B,1C...
+display_bank_offset = [1]
+
+# wp1 / wp2 / wp3
+wallpaper = [wp2]
+
+# 1 / 1.5 / 2 / 2.5
+# long press time in second
+long_press_timing = [1]
+
+# Keep unselected keys in the select group dimly lit.
+LEDSelectLowLight = [on]
+LowLightLevel = [10]
+
+[PAGE]
+page_name = [MNDL]
+
+[key0]
+keytimes = [1]
+ledmode = [select1]
+ledcolor0 = [0x8000ff][0x000000][0x000000]
+ledcolor1 = [0x8000ff][0x8000ff][0x8000ff]
+# Reset scene. Purple first LED at rest; all three LEDs purple while this key is selected.
+short_dw1 = [16][NT][00][127] [15][CC][35][127] [15][CC][30][3]
+short_up1 = [16][NT][00][0]
+
+[key1]
+keytimes = [1]
+ledmode = [select1]
+ledcolor0 = [0x008080][0x000000][0x000000]
+ledcolor1 = [0x008080][0x008080][0x008080]
+# Baseline scene. Teal first LED at rest; all three LEDs teal while this key is selected.
+short_dw1 = [16][NT][23][127]
+short_up1 = [16][NT][23][0]
+
+[key2]
+keytimes = [1]
+ledmode = [select1]
+ledcolor0 = [0x00ff00][0x000000][0x000000]
+ledcolor1 = [0x00ff00][0x00ff00][0x00ff00]
+# Random Low scene. Green first LED at rest; all three LEDs green while this key is selected.
+short_dw1 = [16][NT][19][127]
+short_up1 = [16][NT][19][0]
+
+[key3]
+keytimes = [1]
+ledmode = [select1]
+ledcolor0 = [0xffff00][0x000000][0x000000]
+ledcolor1 = [0xffff00][0xffff00][0xffff00]
+# Random Medium scene. Yellow first LED at rest; all three LEDs yellow while this key is selected.
+short_dw1 = [2][CC][18][127] [2][CC][20][127]
+
+
+[key4]
+keytimes = [1]
+ledmode = [select1]
+ledcolor0 = [0xff8000][0x000000][0x000000]
+ledcolor1 = [0xff8000][0xff8000][0xff8000]
+# Random High scene. Orange first LED at rest; all three LEDs orange while this key is selected.
+short_dw1 = [2][CC][18][0] [2][CC][20][127]
+
+[key5]
+keytimes = [1]
+ledmode = [select1]
+ledcolor0 = [0xff0000][0x000000][0x000000]
+ledcolor1 = [0xff0000][0xff0000][0xff0000]
+# Random Critical scene. Red first LED at rest; all three LEDs red while this key is selected.
+short_dw1 = [2][CC][18][127] [2][CC][20][0]
