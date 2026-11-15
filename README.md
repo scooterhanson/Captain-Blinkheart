@@ -49,9 +49,11 @@ Show Buddy Active running right inside the app, or to any CoreMIDI port.
 
 ## Install
 
-Installers are published under [Releases](../../releases) as they become
-available. Until then, build the app or installer yourself (see
-[Run and build](#run-and-build)). Show Buddy Active is sold separately and
+Download **Captain-Blinkheart-1.0.pkg** from the
+[latest release](../../releases/latest) and open it. The installer is signed
+and notarized by Apple and puts **Captain Blinkheart** in `/Applications`. It
+runs on macOS 12 or later, on Apple silicon and Intel Macs. To build it
+yourself instead, see [Run and build](#run-and-build). Show Buddy Active is sold separately and
 must be installed to host it in the app.
 
 ## Included MIDI Captain profile
