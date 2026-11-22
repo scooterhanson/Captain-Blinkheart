@@ -1,0 +1,155 @@
+{
+  "channels" : 512,
+  "defaultFade" : 1,
+  "exported" : "2027-01-15T08:00:00Z",
+  "format" : "captain-blinkheart-show",
+  "name" : "Fixture",
+  "sequenceTimeout" : 1.5,
+  "switches" : [
+    {
+      "action" : "reset",
+      "fade" : 0,
+      "folder" : "switch-1",
+      "label" : "Key 0",
+      "midi" : [
+        {
+          "channel" : 16,
+          "kind" : "noteOn",
+          "number" : 0,
+          "value" : 127
+        },
+        {
+          "channel" : 15,
+          "kind" : "controlChange",
+          "number" : 35,
+          "value" : 127
+        },
+        {
+          "channel" : 15,
+          "kind" : "controlChange",
+          "number" : 30,
+          "value" : 3
+        }
+      ],
+      "mode" : "single",
+      "number" : 1,
+      "scenes" : [
+
+      ]
+    },
+    {
+      "action" : "baseline",
+      "fade" : 2.5,
+      "folder" : "switch-2",
+      "label" : "Key 1",
+      "midi" : [
+        {
+          "channel" : 16,
+          "kind" : "noteOn",
+          "number" : 23,
+          "value" : 127
+        }
+      ],
+      "mode" : "random",
+      "number" : 2,
+      "scenes" : [
+
+      ]
+    },
+    {
+      "action" : "low",
+      "fade" : 2.5,
+      "folder" : "switch-3",
+      "label" : "Key 2",
+      "midi" : [
+        {
+          "channel" : 16,
+          "kind" : "noteOn",
+          "number" : 19,
+          "value" : 127
+        }
+      ],
+      "mode" : "random",
+      "number" : 3,
+      "scenes" : [
+
+      ]
+    },
+    {
+      "action" : "medium",
+      "fade" : 1.5,
+      "folder" : "switch-4",
+      "label" : "Key 3",
+      "midi" : [
+        {
+          "channel" : 2,
+          "kind" : "controlChange",
+          "number" : 18,
+          "value" : 127
+        },
+        {
+          "channel" : 2,
+          "kind" : "controlChange",
+          "number" : 20,
+          "value" : 127
+        }
+      ],
+      "mode" : "random",
+      "number" : 4,
+      "scenes" : [
+
+      ]
+    },
+    {
+      "action" : "high",
+      "fade" : 0.6,
+      "folder" : "switch-5",
+      "label" : "Key 4",
+      "midi" : [
+        {
+          "channel" : 2,
+          "kind" : "controlChange",
+          "number" : 18,
+          "value" : 0
+        },
+        {
+          "channel" : 2,
+          "kind" : "controlChange",
+          "number" : 20,
+          "value" : 127
+        }
+      ],
+      "mode" : "random",
+      "number" : 5,
+      "scenes" : [
+
+      ]
+    },
+    {
+      "action" : "critical",
+      "fade" : 0.2,
+      "folder" : "switch-6",
+      "label" : "Key 5",
+      "midi" : [
+        {
+          "channel" : 2,
+          "kind" : "controlChange",
+          "number" : 18,
+          "value" : 127
+        },
+        {
+          "channel" : 2,
+          "kind" : "controlChange",
+          "number" : 20,
+          "value" : 0
+        }
+      ],
+      "mode" : "random",
+      "number" : 6,
+      "scenes" : [
+
+      ]
+    }
+  ],
+  "version" : 1
+}

@@ -84,28 +84,34 @@ public struct PedalRule: Codable, Equatable, Identifiable {
     public var label: String
     public var messages: [MIDIInputMessage]
     public var action: SceneAction
+    /// What the key does in playback mode.
+    public var playbackAction: TransportAction
     public var id: Int { button }
 
     public init(
         button: Int,
         label: String,
         messages: [MIDIInputMessage],
-        action: SceneAction
+        action: SceneAction,
+        playbackAction: TransportAction? = nil
     ) {
         self.button = button
         self.label = label
         self.messages = messages
         self.action = action
+        self.playbackAction = playbackAction ?? TransportAction.defaultAction(for: action)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case button, label, messages, action, ccNumber, triggerValue
+        case button, label, messages, action, playbackAction, ccNumber, triggerValue
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         button = try container.decode(Int.self, forKey: .button)
         action = try container.decode(SceneAction.self, forKey: .action)
+        playbackAction = try container.decodeIfPresent(TransportAction.self, forKey: .playbackAction)
+            ?? TransportAction.defaultAction(for: action)
         if let configuredMessages = try container.decodeIfPresent([MIDIInputMessage].self, forKey: .messages) {
             messages = configuredMessages
             label = try container.decodeIfPresent(String.self, forKey: .label) ?? "Button \(button)"
@@ -125,6 +131,7 @@ public struct PedalRule: Codable, Equatable, Identifiable {
         try container.encode(label, forKey: .label)
         try container.encode(messages, forKey: .messages)
         try container.encode(action, forKey: .action)
+        try container.encode(playbackAction, forKey: .playbackAction)
     }
 }
 
@@ -351,6 +358,13 @@ public struct AppConfiguration: Codable, Equatable {
     /// Output cues for every action, keyed by `SceneAction.rawValue`. A cue is
     /// chosen at random from the action's list each time the action fires.
     public var scenes: [String: [MIDICue]]
+    /// Recorded songs, stored in the configuration so no separate files are needed.
+    public var songs: [Song]
+    /// Song IDs in performance order. A song may appear more than once.
+    public var playlist: [UUID]
+    public var performanceMode: PerformanceMode
+    /// Art-Net capture, light preview, and fades for the stage Pi export.
+    public var stagePi: StagePiSettings
 
     public init(
         inputChannel: Int,
@@ -361,7 +375,11 @@ public struct AppConfiguration: Codable, Equatable {
         pluginComponent: PluginComponentID? = nil,
         pluginState: Data? = nil,
         rules: [PedalRule],
-        scenes: [String: [MIDICue]]
+        scenes: [String: [MIDICue]],
+        songs: [Song] = [],
+        playlist: [UUID] = [],
+        performanceMode: PerformanceMode = .live,
+        stagePi: StagePiSettings = StagePiSettings()
     ) {
         self.inputChannel = inputChannel
         self.outputChannel = outputChannel
@@ -372,6 +390,19 @@ public struct AppConfiguration: Codable, Equatable {
         self.pluginState = pluginState
         self.rules = rules
         self.scenes = scenes
+        self.songs = songs
+        self.playlist = playlist
+        self.performanceMode = performanceMode
+        self.stagePi = stagePi
+    }
+
+    public func song(withID id: UUID) -> Song? {
+        songs.first { $0.id == id }
+    }
+
+    /// Playlist entries resolved to songs, skipping any that were deleted.
+    public var playlistSongs: [Song] {
+        playlist.compactMap { song(withID: $0) }
     }
 
     public func cues(for action: SceneAction) -> [MIDICue] {
@@ -381,6 +412,7 @@ public struct AppConfiguration: Codable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case inputChannel, outputChannel, inputUniqueID, outputUniqueID
         case outputTarget, pluginComponent, pluginState, rules, scenes
+        case songs, playlist, performanceMode, stagePi
         // Legacy single-cue keys from configurations saved before Reset and
         // Intro supported random lists.
         case resetCue, baselineCue
@@ -397,6 +429,10 @@ public struct AppConfiguration: Codable, Equatable {
         pluginState = try container.decodeIfPresent(Data.self, forKey: .pluginState)
         rules = try container.decode([PedalRule].self, forKey: .rules)
         scenes = try container.decodeIfPresent([String: [MIDICue]].self, forKey: .scenes) ?? [:]
+        songs = try container.decodeIfPresent([Song].self, forKey: .songs) ?? []
+        playlist = try container.decodeIfPresent([UUID].self, forKey: .playlist) ?? []
+        performanceMode = try container.decodeIfPresent(PerformanceMode.self, forKey: .performanceMode) ?? .live
+        stagePi = try container.decodeIfPresent(StagePiSettings.self, forKey: .stagePi) ?? StagePiSettings()
 
         if scenes[SceneAction.reset.rawValue] == nil,
            let legacyReset = try container.decodeIfPresent(MIDICue.self, forKey: .resetCue) {
@@ -419,6 +455,10 @@ public struct AppConfiguration: Codable, Equatable {
         try container.encodeIfPresent(pluginState, forKey: .pluginState)
         try container.encode(rules, forKey: .rules)
         try container.encode(scenes, forKey: .scenes)
+        try container.encode(songs, forKey: .songs)
+        try container.encode(playlist, forKey: .playlist)
+        try container.encode(performanceMode, forKey: .performanceMode)
+        try container.encode(stagePi, forKey: .stagePi)
     }
 
     public static let `default` = AppConfiguration(
@@ -528,12 +568,13 @@ public enum ConfigurationStore {
     public static let settingsFileName = "Captain-Blinkheart-Settings.json"
 
     /// Encodes the pedal and MIDI settings (button rules, output note lists,
-    /// channels, endpoints, and output target) without the hosted plugin's
+    /// channels, endpoints, output target, songs, and playlist) without the hosted plugin's
     /// identity or state, so the file is small and portable between machines.
     public static func exportSettings(_ configuration: AppConfiguration) throws -> Data {
         var settings = configuration
         settings.pluginComponent = nil
         settings.pluginState = nil
+        settings.stagePi.previewDevicePath = nil
         return try encode(settings)
     }
 
@@ -549,6 +590,12 @@ public enum ConfigurationStore {
         imported.pluginState = configuration.pluginState
         imported.inputUniqueID = imported.inputUniqueID ?? configuration.inputUniqueID
         imported.outputUniqueID = imported.outputUniqueID ?? configuration.outputUniqueID
+        imported.stagePi.previewDevicePath = imported.stagePi.previewDevicePath ?? configuration.stagePi.previewDevicePath
+        // Settings files from before songs existed keep the current songs.
+        if imported.songs.isEmpty, imported.playlist.isEmpty {
+            imported.songs = configuration.songs
+            imported.playlist = configuration.playlist
+        }
         return imported
     }
 

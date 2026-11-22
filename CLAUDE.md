@@ -14,11 +14,36 @@ The bundled MIDI Captain text profile documents the six-button layout and LED
 feedback. Its key actions are parsed into the app's initial rules, keeping the
 physical controller setup and software behavior aligned.
 
+## Songs and playback
+
+Live mode (pedal key → lighting action) is the default. Songs record the
+*actions* a performer fires, timed from the first cue, and are stored inside
+`AppConfiguration` (`songs`, `playlist`, `performanceMode`). No separate files.
+In playback mode each `PedalRule.playbackAction` (Reset, Start, Stop,
+Previous, Next, Live Cue, Nothing) drives the player instead. Playback fires
+recorded actions through the same random cue selection as live mode, on a
+`DispatchSourceTimer` scheduled against a fixed start time, with App Nap
+disabled while timing matters.
+
+## Stage Pi
+
+`pi/` is a Python stage player for a Raspberry Pi (pygame touchscreen,
+python-rtmidi, pyserial to an Enttec DMX USB Pro or Open DMX USB). The Mac
+app feeds it: `ArtNetReceiver` takes Show Buddy's Art-Net on 127.0.0.1,
+`DMXSerialOutput` mirrors it to the Mac's Enttec for preview, and
+`StageExporter` fires every cue, records the DMX, turns each recording into a
+seamless loop (`DMXLoopBuilder`), and writes `blinkheart/show.json` plus
+`switch-N/*.fseq` (FSEQ v2, uncompressed). `StageShowManifest` in
+`StageExport.swift` and `pi/blinkheart_pi/show.py` must stay in step; the Pi
+tests read fixtures written by the Swift encoder (`pi/tests/fixtures`).
+
 ## Architectural approach
 
 - **SwiftUI application layer:** `SceneBridgeApp` and `ContentView` provide the
-  macOS window, persistent MIDI routing controls, the Main, MIDI Captain, MIDI Out, and
-  Show Buddy tabs, and configuration-file dialogs.
+  macOS window, persistent MIDI routing controls, the Main, Songs, MIDI
+  Captain, MIDI Out, and Show Buddy tabs, the Live/Playback mode switch, and
+  configuration-file dialogs. `SongsView` holds the Songs tab and the stage
+  playback display.
 - **Application model:** `AppModel` owns the active configuration and display
   state. It coordinates MIDI input, matches incoming messages to configured
   rules, selects cues, sends output notes, records log entries, and persists
@@ -33,7 +58,8 @@ physical controller setup and software behavior aligned.
   messages to the selected destination.
 - **Reusable core logic:** `SceneBridgeCore` contains platform-independent
   configuration and cue models, MIDI Captain text parsing, ordered
-  multi-message rule matching, and random scene selection. This keeps the
+  multi-message rule matching, and random scene selection, plus song recording/playback models (`Songs.swift`:
+  `SongRecorder`, `PlaybackCursor`, `PlaylistNavigator`). This keeps the
   behavior independently testable and separate from the SwiftUI presentation.
 - **Configuration sources:** The bundled plain-text pedal profile supplies
   the initial button mappings. JSON configuration files store the editable

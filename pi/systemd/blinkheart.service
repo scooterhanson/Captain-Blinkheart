@@ -1,0 +1,21 @@
+[Unit]
+Description=Captain Blinkheart stage player
+After=local-fs.target
+Wants=local-fs.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/blinkheart
+Environment=PYTHONUNBUFFERED=1
+Environment=BLINKHEART_HOME=/boot/firmware/blinkheart-pi
+# Draw straight to the display without a desktop.
+Environment=SDL_VIDEODRIVER=kmsdrm
+ExecStart=/usr/bin/python3 -m blinkheart_pi
+Restart=always
+RestartSec=1
+# Root is needed to mount USB sticks and open the display and DMX box.
+User=root
+Nice=-10
+
+[Install]
+WantedBy=multi-user.target

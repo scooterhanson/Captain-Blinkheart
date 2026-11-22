@@ -20,9 +20,14 @@ struct ContentView: View {
                         Label("Main", systemImage: "rectangle.3.group")
                     }
                     .tag(AppTab.main)
+                SongsTab(model: model)
+                    .tabItem {
+                        Label("Songs", systemImage: "music.note.list")
+                    }
+                    .tag(AppTab.songs)
                 midiCaptainTab
                     .tabItem {
-                        Label("MIDI Captain", systemImage: "pedalboard")
+                        Label("MIDI Captain", systemImage: "switch.2")
                     }
                     .tag(AppTab.midiCaptain)
                 midiOutTab
@@ -32,9 +37,14 @@ struct ContentView: View {
                     .tag(AppTab.midiOut)
                 PluginTab(model: model, plugin: model.plugin)
                     .tabItem {
-                        Label("Show Buddy", systemImage: "lightbulb.2")
+                        Label("Show Buddy", systemImage: "lightbulb")
                     }
                     .tag(AppTab.plugin)
+                StagePiTab(model: model, artNet: model.artNet, preview: model.dmxPreview, exporter: model.stageExporter)
+                    .tabItem {
+                        Label("Stage Pi", systemImage: "square.and.arrow.up")
+                    }
+                    .tag(AppTab.stagePi)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             if let status = model.statusMessage {
@@ -70,21 +80,44 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
+            Picker("Mode", selection: performanceModeBinding) {
+                ForEach(PerformanceMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 220)
+            .help("Live: pedal keys fire lighting actions. Playback: pedal keys run the playlist (Reset, Start, Stop, Previous, Next).")
             Button("Refresh MIDI", action: model.refreshDevices)
         }
+    }
+
+    private var performanceModeBinding: Binding<PerformanceMode> {
+        Binding(
+            get: { model.configuration.performanceMode },
+            set: { model.setPerformanceMode($0) }
+        )
     }
 
     private var mainTab: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Text(model.energy.uppercased())
-                    .font(.system(size: 64, weight: .heavy, design: .rounded))
-                    .foregroundStyle(energyColor)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .frame(height: 230)
-                    .background(Color.black, in: RoundedRectangle(cornerRadius: 12))
+                if model.recording != nil {
+                    RecordingBanner(model: model)
+                }
+                if model.configuration.performanceMode == .playback {
+                    PlaybackDisplay(model: model, energyColor: energyColor)
+                    TransportButtons(model: model)
+                } else {
+                    Text(model.energy.uppercased())
+                        .font(.system(size: 64, weight: .heavy, design: .rounded))
+                        .foregroundStyle(energyColor)
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(height: 230)
+                        .background(Color.black, in: RoundedRectangle(cornerRadius: 12))
+                }
 
                 logPanel
             }
@@ -201,6 +234,17 @@ struct ContentView: View {
                             }
                             .labelsHidden()
                             .frame(width: 145)
+                            .help("What this key does in live mode")
+                            Picker(
+                                "Playback",
+                                selection: $model.configuration.rules[index].playbackAction
+                            ) {
+                                ForEach(TransportAction.allCases) { action in
+                                    Text(action.title).tag(action)
+                                }
+                            }
+                            .frame(width: 210)
+                            .help("What this key does in playback mode. Live Cue fires the key's live action.")
                         }
                         ForEach(model.configuration.rules[index].messages.indices, id: \.self) { messageIndex in
                             inputMessageEditor(ruleIndex: index, messageIndex: messageIndex)
@@ -213,7 +257,7 @@ struct ContentView: View {
                     .padding(8)
                     .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
                 }
-                Text("A key fires when its messages arrive in order within 1.5 seconds.")
+                Text("A key fires when its messages arrive in order within 1.5 seconds. Its action applies in live mode; its playback command applies in playback mode.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -437,6 +481,8 @@ struct ContentView: View {
         switch direction {
         case "IN": .blue
         case "OUT": .green
+        case "PLAY": .purple
+        case "REC": .red
         default: .secondary
         }
     }
@@ -566,7 +612,7 @@ private struct PluginTab: View {
     @ViewBuilder
     private var placeholder: some View {
         VStack(spacing: 12) {
-            Image(systemName: "lightbulb.2")
+            Image(systemName: "lightbulb")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary)
             if plugin.isLoading {
