@@ -71,6 +71,7 @@ class SerialDMX:
         self.next_attempt = 0.0
         self.error: Optional[str] = None
         self.lock = threading.Lock()
+        self.timeouts = 0
 
     @property
     def connected(self) -> bool:
@@ -137,7 +138,11 @@ class SerialDMX:
                     self.port.write(b"\x00" + frame)
                     self.port.flush()
                 self.last_frame = frame
-            except Exception as error:  # unplugged
+                self.timeouts = 0
+            except Exception as error:  # unplugged, or USB briefly stalled
+                if "timeout" in str(error).lower() and self.timeouts < 3:
+                    self.timeouts += 1
+                    return  # the Pro keeps showing the last frame; try again next frame
                 log.warning("DMX output lost: %s", error)
                 self.error = "disconnected"
                 self.close()

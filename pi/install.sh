@@ -12,6 +12,7 @@
 #                                  set the screen's resolution (bar screens
 #                                  that don't report it); without this, an
 #                                  hdmi_cvt line in config.txt is used
+#   sudo ./install.sh --screen auto  use the screen's own timing
 set -euo pipefail
 
 if [[ $EUID -ne 0 ]]; then

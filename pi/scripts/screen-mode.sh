@@ -13,13 +13,20 @@
 # This script writes that option, from the size you give or from an
 # hdmi_cvt line already in config.txt.
 #
-# Usage: screen-mode.sh <boot folder> [WIDTHxHEIGHT[@RATE]]   e.g. 400x1280@60
+# Usage: screen-mode.sh <boot folder> [WIDTHxHEIGHT[@RATE] | auto]   e.g. 400x1280@60
+# "auto" removes the setting so the screen's own timing (EDID) is used.
 set -euo pipefail
 BOOT="${1:?usage: screen-mode.sh <boot folder> [WIDTHxHEIGHT[@RATE]]}"
 MODE="${2:-}"
 CMDLINE="$BOOT/cmdline.txt"
 CONFIG="$BOOT/config.txt"
 
+if [[ "$MODE" == auto ]]; then
+    line="$(tr -d '\n' < "$CMDLINE" | sed -E 's/ ?video=HDMI-A-1:[^ ]*//g')"
+    printf '%s\n' "$line" > "$CMDLINE"
+    echo "Screen resolution set back to automatic (the screen's own timing). Reboot to apply."
+    exit 0
+fi
 if [[ -z "$MODE" ]]; then
     cvt="$(grep -E '^[[:space:]]*hdmi_cvt[[:space:]=]' "$CONFIG" | tail -1 | sed -E 's/^[[:space:]]*hdmi_cvt[[:space:]=]+//' || true)"
     if [[ -n "$cvt" ]]; then

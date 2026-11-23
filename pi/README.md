@@ -352,7 +352,7 @@ Your show and settings are kept.
 | **"Low: no scenes in switch-3"** | That folder is empty. Run a full **Export to Pi…**. |
 | The stick isn't noticed | Make sure the `blinkheart` folder is at the top level of the stick. Wait a few seconds after plugging it in. |
 | Screen stays black; the log says **"EGL not initialized"** or **"Could not open the display"** | The screen's graphics drivers are missing. Update the code (`git pull`), run `sudo ./install.sh` again, and reboot. The footswitches and lights keep working meanwhile; the player retries the screen every 15 s. |
-| Screen stays black but the log shows **"Display: …"** | The screen's resolution isn't set. See [2.2](#22-screen-settings-bar-shaped-screens), then reboot. |
+| Screen stays black but the log shows **"Display: …"** | The screen's resolution isn't set or its timing is wrong. Run `sudo ./scripts/screen-check.sh` from the `pi` folder: it lists the timings the screen reports and draws a test pattern. Then see [2.2](#22-screen-settings-bar-shaped-screens) (`--screen auto` goes back to the screen's own timing) and reboot. |
 | The screen is sideways or upside down | Set `rotate` in `settings.json`. |
 | Boot text or a login prompt appears | Run `sudo ./install.sh` again (read-only off first), then reboot. |
 | The Pi reboots by itself or shows a lightning bolt | The power supply is too weak. Use a 5 V, 3 A supply. |

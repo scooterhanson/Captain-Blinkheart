@@ -111,6 +111,8 @@ class USBWatcher(threading.Thread):
                         found[candidate.key] = candidate
                 for key, candidate in found.items():
                     if key not in self.reported:
+                        log.info("Found show \"%s\" in %s: %d switches, %d scenes",
+                                 candidate.name, candidate.path, candidate.switches, candidate.scenes)
                         self.on_found(candidate)
                 if self.reported and not found:
                     self.on_removed()
