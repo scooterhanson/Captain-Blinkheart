@@ -101,6 +101,12 @@ class App:
             return
         if candidate.key in self.dismissed:
             return
+        if show is None and not candidate.on_sd_card:
+            # Nothing to replace, so there's no need to ask: load it.
+            log.info("No show installed yet, so loading \"%s\" from the stick", candidate.name)
+            self.pending_import = candidate
+            self.accept_import()
+            return
         self.pending_import = candidate
 
     def _stick_removed(self) -> None:
@@ -121,6 +127,7 @@ class App:
             self.load_installed_show()
             if self.usb:
                 self.usb.release(candidate)
+            log.info("Loaded \"%s\" from the stick; it can be removed", candidate.name)
             self.notify(f"Loaded \"{candidate.name}\" · you can remove the stick", 6)
         except Exception as error:
             log.exception("Import failed")

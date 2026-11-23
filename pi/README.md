@@ -225,7 +225,8 @@ group needs a full export.
 
 1. With the Pi running, plug the stick into it.
 2. The screen asks **Load show "…"?** with the number of switches and scenes.
-   Tap **Load**.
+   Tap **Load**. (The very first show loads without asking, since there's
+   nothing to replace.)
 3. Wait for **Loaded "…" · you can remove the stick**, then remove it.
 
 The new show is copied and checked before it replaces the old one. If the

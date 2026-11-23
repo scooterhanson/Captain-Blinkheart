@@ -108,6 +108,33 @@ class ShowTests(unittest.TestCase):
         self.assertEqual(show.load(home / "show").scene_count, 16)
 
 
+class AppImportTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_first_show_loads_without_asking(self):
+        import time
+        from blinkheart_pi.app import App
+
+        app = App(self.tmp / "home", dmx="null", midi=False, usb=False)
+        candidate = usb_import.inspect(make_show(self.tmp / "stick"))
+        app._found_show(candidate)
+        for _ in range(50):
+            if app.engine.show:
+                break
+            time.sleep(0.05)
+        self.assertIsNotNone(app.engine.show)
+        self.assertIsNone(app.pending_import)
+        # With a show installed, a different one asks first.
+        other = usb_import.inspect(candidate.path)
+        other.exported = "2030-01-01T00:00:00Z"
+        app._found_show(other)
+        self.assertIs(app.pending_import, other)
+
+
 class EngineTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
