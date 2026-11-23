@@ -65,13 +65,33 @@ You'll need a network connection for this part only. Gigs don't need one.
    - **Services** tab: turn on **Enable SSH** with password authentication
 6. Save, then write the card.
 
-### 2.2 Screen settings (only if your screen needs them)
+### 2.2 Screen settings (bar-shaped screens)
 
-Some bar-shaped screens need extra lines in the Pi's `config.txt` (their
-maker's instructions list them, usually `hdmi_` or `dtoverlay=` lines). With
-the SD card still in your Mac, open the **bootfs** drive, open `config.txt`
-in TextEdit, and add the lines at the end. Most HDMI screens with USB touch
-need nothing.
+Long, narrow screens (400×1280 and similar) often don't tell the Pi their
+resolution, so the screen stays black. Their maker's instructions usually
+list `config.txt` lines such as:
+
+```
+hdmi_group=2
+hdmi_mode=87
+hdmi_cvt 400 1280 60 6 0 0 0
+```
+
+Add those lines at the end of `config.txt` (with the SD card in your Mac,
+open the **bootfs** drive and edit `config.txt` in TextEdit). The Pi's old
+display driver used them directly; the player needs the newer KMS driver,
+which ignores them, so the installer copies the size from the `hdmi_cvt`
+line into `cmdline.txt` for you (as `video=HDMI-A-1:400x1280M@60D`).
+
+If you don't have an `hdmi_cvt` line, give the size to the installer
+instead, width × height as the panel itself is built (usually tall:
+`400x1280`):
+
+```bash
+sudo ./install.sh --screen 400x1280@60
+```
+
+Most ordinary HDMI screens need none of this.
 
 ### 2.3 Install Captain Blinkheart Pi
 
@@ -332,6 +352,7 @@ Your show and settings are kept.
 | **"Low: no scenes in switch-3"** | That folder is empty. Run a full **Export to Pi…**. |
 | The stick isn't noticed | Make sure the `blinkheart` folder is at the top level of the stick. Wait a few seconds after plugging it in. |
 | Screen stays black; the log says **"EGL not initialized"** or **"Could not open the display"** | The screen's graphics drivers are missing. Update the code (`git pull`), run `sudo ./install.sh` again, and reboot. The footswitches and lights keep working meanwhile; the player retries the screen every 15 s. |
+| Screen stays black but the log shows **"Display: …"** | The screen's resolution isn't set. See [2.2](#22-screen-settings-bar-shaped-screens), then reboot. |
 | The screen is sideways or upside down | Set `rotate` in `settings.json`. |
 | Boot text or a login prompt appears | Run `sudo ./install.sh` again (read-only off first), then reboot. |
 | The Pi reboots by itself or shows a lightning bolt | The power supply is too weak. Use a 5 V, 3 A supply. |

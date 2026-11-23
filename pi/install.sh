@@ -8,6 +8,10 @@
 #
 #   sudo ./install.sh              install or update
 #   sudo ./install.sh --read-only  also turn on the read-only system
+#   sudo ./install.sh --screen 400x1280@60
+#                                  set the screen's resolution (bar screens
+#                                  that don't report it); without this, an
+#                                  hdmi_cvt line in config.txt is used
 set -euo pipefail
 
 if [[ $EUID -ne 0 ]]; then
@@ -16,7 +20,15 @@ if [[ $EUID -ne 0 ]]; then
 fi
 HERE="$(cd "$(dirname "$0")" && pwd)"
 READ_ONLY=0
-[[ "${1:-}" == "--read-only" ]] && READ_ONLY=1
+SCREEN=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --read-only) READ_ONLY=1 ;;
+        --screen) SCREEN="${2:?--screen needs a size, e.g. 400x1280@60}"; shift ;;
+        *) echo "Unknown option: $1" >&2; exit 1 ;;
+    esac
+    shift
+done
 
 if grep -q " / overlay" /proc/mounts; then
     echo "The read-only system is on, so nothing can be installed." >&2
@@ -41,6 +53,7 @@ if ! grep -Eq "^[[:space:]]*dtoverlay=vc4-(f)?kms-v3d" "$BOOT/config.txt"; then
     printf '\n[all]\ndtoverlay=vc4-kms-v3d\n' >> "$BOOT/config.txt"
     echo "Turned on the KMS display driver in config.txt (takes effect after a reboot)."
 fi
+"$HERE/scripts/screen-mode.sh" "$BOOT" "$SCREEN"
 
 echo "== Installing the player in /opt/blinkheart"
 rm -rf /opt/blinkheart
