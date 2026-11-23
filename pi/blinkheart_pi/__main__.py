@@ -67,7 +67,8 @@ def run_screen(app, args, stopping) -> None:
                 time.sleep(0.2)
                 continue
             try:
-                screen = Screen(app, size=size, rotate=app.settings.rotate, fullscreen=not args.windowed)
+                screen = Screen(app, size=size, rotate=app.settings.rotate, fullscreen=not args.windowed,
+                                display=app.settings.display)
                 clock = pygame.time.Clock()
                 if warned:
                     log.info("The display is working now")
@@ -78,11 +79,13 @@ def run_screen(app, args, stopping) -> None:
                     warned = True
                 retry_at = time.monotonic() + 15
                 continue
-        for event in pygame.event.get():
+        for event in screen.events():
             if not screen.handle(event):
                 stopping.append(True)
         screen.draw()
         clock.tick(20)
+    if screen is not None:
+        screen.close()
 
 
 if __name__ == "__main__":

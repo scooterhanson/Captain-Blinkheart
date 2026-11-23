@@ -23,6 +23,7 @@ class Settings:
     midi_filter: str = ""         # only open MIDI inputs whose name contains this
     rotate: str = "auto"          # "auto", "0", "90", "180", "270"
     startup_switch: int = 0       # switch to press at startup (0 = stay dark)
+    display: str = "auto"         # "auto" (framebuffer), "framebuffer", or "kms" (SDL)
 
 
 def home() -> Path:

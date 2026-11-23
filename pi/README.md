@@ -318,7 +318,8 @@ them. Edit it in TextEdit with the card in your Mac, then restart the Pi.
   "dmx_type": "auto",
   "midi_filter": "",
   "rotate": "auto",
-  "startup_switch": 0
+  "startup_switch": 0,
+  "display": "auto"
 }
 ```
 
@@ -329,6 +330,7 @@ them. Edit it in TextEdit with the card in your Mac, then restart the Pi.
 | `midi_filter` | text | Use only MIDI devices whose name contains this, e.g. `MIDI Captain`. Empty uses all. |
 | `rotate` | `auto`, `0`, `90`, `180`, `270` | Screen rotation. `auto` turns a tall panel sideways; use `270` if it's upside down. |
 | `startup_switch` | `0`–`6` | Press this switch at power-on, e.g. `2` to start on Intro. `0` stays dark. |
+| `display` | `auto`, `framebuffer`, `kms` | How the player draws. `auto` draws straight to the screen's framebuffer and reads touches itself, which works on the Pi 3B+. `kms` uses SDL's KMS driver instead. |
 
 ## 7. Update the Pi software
 

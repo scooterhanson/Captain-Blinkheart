@@ -7,6 +7,7 @@ the current scene in large type. Tapping a tile presses that switch."""
 from __future__ import annotations
 
 import logging
+import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +15,7 @@ from typing import Callable, List, Optional, Tuple
 
 import pygame
 
+from . import fbdisplay
 from .show import ACTION_NAMES
 
 BLACK = (0, 0, 0)
@@ -82,16 +84,26 @@ def open_fullscreen(size: Optional[Tuple[int, int]]):
 
 class Screen:
     def __init__(self, app, size: Optional[Tuple[int, int]] = None, rotate: str = "auto",
-                 fullscreen: bool = True):
+                 fullscreen: bool = True, display: str = "auto"):
         self.app = app
+        self.framebuffer = None
+        self.touch = None
         pygame.font.init()
-        if fullscreen:
+        if fullscreen and display in ("auto", "framebuffer") and fbdisplay.available():
+            # SDL gets no real display, only its event queue; we draw to
+            # /dev/fb0 and read the touchscreen ourselves.
+            os.environ["SDL_VIDEODRIVER"] = "dummy"
+            pygame.display.init()
+            self.framebuffer = fbdisplay.Framebuffer()
+            self.window = self.framebuffer.surface
+            self.touch = fbdisplay.TouchInput(self.framebuffer.size)
+        elif fullscreen:
             self.window = open_fullscreen(size)
             pygame.mouse.set_visible(False)
         else:
             pygame.display.init()
             self.window = pygame.display.set_mode(size or (1280, 400))
-        pygame.display.set_caption("Captain Blinkheart")
+            pygame.display.set_caption("Captain Blinkheart")
         width, height = self.window.get_size()
         if rotate == "auto":
             rotate = "90" if height > width else "0"
@@ -263,7 +275,23 @@ class Screen:
         else:
             frame = self.canvas
         self.window.blit(frame, (0, 0))
-        pygame.display.flip()
+        if self.framebuffer:
+            self.framebuffer.present()
+        else:
+            pygame.display.flip()
+
+    def events(self) -> list:
+        events = pygame.event.get()
+        if self.touch:
+            events += [pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=tap, button=1)
+                       for tap in self.touch.take()]
+        return events
+
+    def close(self) -> None:
+        if self.touch:
+            self.touch.stop()
+        if self.framebuffer:
+            self.framebuffer.close()
 
     def save(self, path: str) -> None:
         pygame.image.save(self.canvas, path)
