@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Callable, List, Optional, Tuple
 
 import pygame
@@ -46,18 +47,42 @@ def dim(color, amount=0.28):
     return tuple(int(c * amount) for c in color)
 
 
+def open_fullscreen(size: Optional[Tuple[int, int]]):
+    """Opens the display full screen. With kmsdrm, SDL picks the first DRM
+    card; if that fails (for example "EGL not initialized"), try the other
+    cards before giving up."""
+    import os
+
+    errors = []
+    attempts = [None]
+    if os.environ.get("SDL_VIDEODRIVER", "kmsdrm") == "kmsdrm":
+        attempts += ["0", "1", "2"]
+    for index in attempts:
+        if index is not None:
+            if not Path(f"/dev/dri/card{index}").exists():
+                continue
+            os.environ["SDL_KMSDRM_DEVICE_INDEX"] = index
+        try:
+            pygame.display.quit()
+            pygame.display.init()
+            info = pygame.display.Info()
+            return pygame.display.set_mode(size or (info.current_w, info.current_h), pygame.FULLSCREEN)
+        except pygame.error as error:
+            errors.append(f"card{index if index is not None else ' (default)'}: {error}")
+    pygame.display.quit()
+    raise pygame.error("Could not open the display. " + "; ".join(errors))
+
+
 class Screen:
     def __init__(self, app, size: Optional[Tuple[int, int]] = None, rotate: str = "auto",
                  fullscreen: bool = True):
         self.app = app
-        pygame.display.init()
         pygame.font.init()
         if fullscreen:
-            info = pygame.display.Info()
-            native = (info.current_w, info.current_h)
-            self.window = pygame.display.set_mode(size or native, pygame.FULLSCREEN)
+            self.window = open_fullscreen(size)
             pygame.mouse.set_visible(False)
         else:
+            pygame.display.init()
             self.window = pygame.display.set_mode(size or (1280, 400))
         pygame.display.set_caption("Captain Blinkheart")
         width, height = self.window.get_size()

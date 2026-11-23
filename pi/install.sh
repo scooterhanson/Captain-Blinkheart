@@ -32,6 +32,15 @@ HOME_DIR="$BOOT/blinkheart-pi"
 echo "== Installing packages"
 apt-get update
 apt-get install -y python3 python3-pygame python3-serial python3-rtmidi
+# Pi OS Lite leaves out the graphics drivers SDL needs to draw on the screen
+# without a desktop (otherwise: "EGL not initialized").
+apt-get install -y libegl1 libegl-mesa0 libgles2 libgbm1 libgl1-mesa-dri
+
+echo "== Checking the display driver"
+if ! grep -Eq "^[[:space:]]*dtoverlay=vc4-(f)?kms-v3d" "$BOOT/config.txt"; then
+    printf '\n[all]\ndtoverlay=vc4-kms-v3d\n' >> "$BOOT/config.txt"
+    echo "Turned on the KMS display driver in config.txt (takes effect after a reboot)."
+fi
 
 echo "== Installing the player in /opt/blinkheart"
 rm -rf /opt/blinkheart

@@ -41,23 +41,48 @@ def main(argv=None) -> int:
             while not stopping:
                 time.sleep(0.2)
         else:
-            import pygame
-            from .ui import Screen
-
-            size = tuple(int(v) for v in args.size.split("x")) if args.size else None
-            screen = Screen(app, size=size, rotate=app.settings.rotate, fullscreen=not args.windowed)
-            clock = pygame.time.Clock()
-            while not stopping:
-                for event in pygame.event.get():
-                    if not screen.handle(event):
-                        stopping.append(True)
-                screen.draw()
-                clock.tick(20)
+            run_screen(app, args, stopping)
     except KeyboardInterrupt:
         pass
     finally:
         app.stop()
     return 0
+
+
+def run_screen(app, args, stopping) -> None:
+    """Runs the touchscreen. If the display can't be opened, the show keeps
+    running from the footswitches without it, and the screen is retried
+    every 15 seconds; the lights never wait on the display."""
+    import pygame
+    from .ui import Screen
+
+    log = logging.getLogger("blinkheart_pi")
+    size = tuple(int(v) for v in args.size.split("x")) if args.size else None
+    screen = None
+    warned = False
+    retry_at = 0.0
+    while not stopping:
+        if screen is None:
+            if time.monotonic() < retry_at:
+                time.sleep(0.2)
+                continue
+            try:
+                screen = Screen(app, size=size, rotate=app.settings.rotate, fullscreen=not args.windowed)
+                clock = pygame.time.Clock()
+                if warned:
+                    log.info("The display is working now")
+            except pygame.error as error:
+                if not warned:
+                    log.error("%s The footswitches and lights keep working without the screen; "
+                              "retrying every 15 s.", error)
+                    warned = True
+                retry_at = time.monotonic() + 15
+                continue
+        for event in pygame.event.get():
+            if not screen.handle(event):
+                stopping.append(True)
+        screen.draw()
+        clock.tick(20)
 
 
 if __name__ == "__main__":
