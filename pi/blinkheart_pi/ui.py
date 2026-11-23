@@ -6,6 +6,7 @@ the current scene in large type. Tapping a tile presses that switch."""
 
 from __future__ import annotations
 
+import logging
 import time
 from datetime import datetime
 from pathlib import Path
@@ -66,7 +67,13 @@ def open_fullscreen(size: Optional[Tuple[int, int]]):
             pygame.display.quit()
             pygame.display.init()
             info = pygame.display.Info()
-            return pygame.display.set_mode(size or (info.current_w, info.current_h), pygame.FULLSCREEN)
+            window = pygame.display.set_mode(size or (info.current_w, info.current_h), pygame.FULLSCREEN)
+            logging.getLogger(__name__).info(
+                "Display: %s driver, %s, desktop %dx%d, window %dx%d",
+                pygame.display.get_driver(),
+                f"card{index}" if index is not None else "default card",
+                info.current_w, info.current_h, *window.get_size())
+            return window
         except pygame.error as error:
             errors.append(f"card{index if index is not None else ' (default)'}: {error}")
     pygame.display.quit()
