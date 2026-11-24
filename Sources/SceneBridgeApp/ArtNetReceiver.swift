@@ -17,6 +17,8 @@ final class ArtNetReceiver: ObservableObject {
         var isListening = false
         var framesPerSecond = 0.0
         var lastFrameTime: TimeInterval?
+        /// Channels above zero in the latest frame: 0 means Show Buddy is sending darkness.
+        var litChannels = 0
         var error: String?
     }
 
@@ -162,11 +164,13 @@ final class ArtNetReceiver: ObservableObject {
     private func publishStatus() {
         lock.lock()
         let times = frameTimes
+        let lit = latest?.reduce(0) { $0 + ($1 > 0 ? 1 : 0) } ?? 0
         lock.unlock()
         let now = AppModel.now()
         let recent = times.filter { now - $0 < 2 }
         var updated = status
         updated.lastFrameTime = times.last
+        updated.litChannels = lit
         if recent.count > 1, let first = recent.first, let last = recent.last, last > first {
             updated.framesPerSecond = Double(recent.count - 1) / (last - first)
         } else {

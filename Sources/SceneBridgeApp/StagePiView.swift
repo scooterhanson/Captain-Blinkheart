@@ -60,8 +60,14 @@ struct StagePiTab: View {
             Label(error, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
         } else if !artNet.status.isListening {
             Label("Off", systemImage: "circle").foregroundStyle(.secondary)
+        } else if artNet.status.framesPerSecond > 0 && artNet.status.litChannels == 0 {
+            Label(String(format: "Receiving %.1f frames/s, all channels at zero", artNet.status.framesPerSecond),
+                  systemImage: "moon.fill")
+                .foregroundStyle(.orange)
+                .help("Show Buddy is sending Art-Net but every light is off. Fire a cue; if this stays at zero, the export would record darkness.")
         } else if artNet.status.framesPerSecond > 0 {
-            Label(String(format: "Receiving %.1f frames/s", artNet.status.framesPerSecond), systemImage: "dot.radiowaves.left.and.right")
+            Label(String(format: "Receiving %.1f frames/s · %d channels lit", artNet.status.framesPerSecond, artNet.status.litChannels),
+                  systemImage: "dot.radiowaves.left.and.right")
                 .foregroundStyle(.green)
         } else {
             Label("Listening — no Art-Net from Show Buddy yet", systemImage: "ear")

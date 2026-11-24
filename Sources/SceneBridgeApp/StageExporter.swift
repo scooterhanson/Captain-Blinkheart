@@ -24,7 +24,7 @@ final class StageExporter: ObservableObject {
     }
 
     enum ExportError: LocalizedError {
-        case noArtNet, nothingToExport, cueFailed(String, String)
+        case noArtNet, nothingToExport, cueFailed(String, String), allDark(Int)
 
         var errorDescription: String? {
             switch self {
@@ -34,6 +34,8 @@ final class StageExporter: ObservableObject {
                 "There are no pedal keys with output notes to export."
             case .cueFailed(let name, let error):
                 "Could not fire \(name): \(error)"
+            case .allDark(let count):
+                "The first \(count) scenes recorded every channel at zero, so Show Buddy isn't sending any light levels over Art-Net. Make sure the cues reach Show Buddy (the lights or its editor should change when you fire one) and that the Stage Pi tab shows channels lit, then export again. Nothing was changed on the stick."
             }
         }
     }
@@ -116,6 +118,8 @@ final class StageExporter: ObservableObject {
         // Record every scene once per action, even if several keys share it.
         var loops: [String: DMXLoop] = [:] // keyed by cue id within an action
         var completed = 0
+        var litScenes = 0
+        var darkScenes = 0
         let perScene = settings.captureSeconds + settings.settleSeconds + 0.3
         let started = AppModel.now()
         log("Stage export: recording \(total) scenes")
@@ -134,6 +138,17 @@ final class StageExporter: ObservableObject {
                 let loop = try DMXLoopBuilder.build(from: frames, seamSeconds: settings.seamSeconds)
                 loops["\(action.rawValue)/\(cue.id)"] = loop
                 completed += 1
+                // Reset is meant to be dark; any other scene with no light at
+                // all means Show Buddy isn't sending levels.
+                if action != .reset {
+                    if loop.frames.contains(where: { $0.contains { $0 > 0 } }) {
+                        litScenes += 1
+                    } else {
+                        darkScenes += 1
+                        log("Warning: \(cue.name) recorded every channel at zero")
+                        if litScenes == 0 && darkScenes >= 3 { throw ExportError.allDark(darkScenes) }
+                    }
+                }
                 log(String(
                     format: "Recorded %@: %@ (%.1f s loop, seam difference %.1f)",
                     cue.name,

@@ -351,6 +351,7 @@ Your show and settings are kept.
 |---|---|
 | **DMX box not found** | Check the USB cable, or try another port. If it's an Open DMX box, set `"dmx_type": "open"`. |
 | **No MIDI input** | Check the MIDI Captain's USB cable. It should appear within a few seconds. |
+| The screen follows the pedal but **the lights don't change** | Run `sudo python3 -m blinkheart_pi.check show` in `/opt/blinkheart`. If it says **ALL CHANNELS ZERO**, the export recorded darkness: in Captain Blinkheart's Stage Pi tab, Art-Net must show *channels lit* when you fire a cue, then export again. If the scenes have levels, run `sudo python3 -m blinkheart_pi.check dmx`: it flashes every channel at full, to test the box, cable, and light addresses. |
 | A footswitch does nothing | The pedal's messages must match the key's MIDI messages in Captain Blinkheart. Fix them in the MIDI Captain tab, then **Update Settings Only…**. |
 | **"Low: no scenes in switch-3"** | That folder is empty. Run a full **Export to Pi…**. |
 | The stick isn't noticed | Make sure the `blinkheart` folder is at the top level of the stick. Wait a few seconds after plugging it in. |
