@@ -64,7 +64,7 @@ to any CoreMIDI port.
 
 ## Install
 
-Download **Captain-Blinkheart-1.0.pkg** from the
+Download **Captain-Blinkheart-1.1.pkg** from the
 [latest release](../../releases/latest) and open it. The installer is signed
 and notarized by Apple and puts **Captain Blinkheart** in `/Applications`. It
 runs on macOS 12 or later, on Apple silicon and Intel Macs. To build it
